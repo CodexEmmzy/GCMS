@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  postgres-db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - ".env"
+    volumes:
+      - ./db:/var/lib/postgresql/data  # Main data directory
+      - ./gms:/var/lib/postgresql/data/gms  # Separate directory for 'gms' sub-directory
+    environment:      
+      POSTGRES_USER: "$POSTGRES_USER"
+      POSTGRES_PASSWORD: "$POSTGRES_PASSWORD"
+      POSTGRES_DB: "$POSTGRES_DB"
+      PGDATA: "$PGDATA"
+      POSTGRES_HOST_AUTH_METHOD: "true"
+
+  seassion_management:
+    build:
+      dockerfile: Dockerfile
+      context: ./seassion_management
+    container_name: seassion_management
+    ports:
+      - "8001:8001"
+    restart: always
+    depends_on:
+      - postgres-db
+    volumes:
+      - ./seassion_management:/app
+      - /app/seassion_management/node_modules
+    env_file:
+      - ./seassion_management/.env
